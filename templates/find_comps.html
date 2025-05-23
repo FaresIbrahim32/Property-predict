@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Find Comparable Properties{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Find Comparable Properties</h1>
+    
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-info">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    
+    <!-- Quick Test Section with Real Properties -->
+    {% if sample_properties and sample_properties|length > 0 %}
+    <div class="card mb-4" style="border-left: 4px solid #007bff;">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-rocket"></i> Quick Test with Real Properties from Your Dataset
+            </h5>
+        </div>
+        <div class="card-body">
+            <p class="card-text">Choose a real property from your dataset to quickly test the system:</p>
+            <form action="{{ url_for('find_comps') }}" method="post">
+                <div class="form-group">
+                    <label for="sample_property">Select Property from Your Dataset:</label>
+                    <select class="form-control" id="sample_property" name="sample_property" onchange="toggleCustomForm()">
+                        <option value="custom">Enter Custom Property Details</option>
+                        {% for sample in sample_properties %}
+                        <option value="{{ sample.name }}" 
+                                data-structure="{{ sample.structure_type }}"
+                                data-gla="{{ sample.gla }}"
+                                data-year="{{ sample.year_built }}"
+                                data-beds="{{ sample.num_beds }}"
+                                data-baths="{{ sample.num_baths }}"
+                                data-address="{{ sample.address }}">
+                            {{ sample.address }} - {{ sample.structure_type }}, {{ "{:,}".format(sample.gla) }} sq ft, {{ sample.year_built }}, {{ sample.num_beds }}BR/{{ sample.num_baths }}BA
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle"></i> These are actual properties from your uploaded dataset
+                    </small>
+                </div>
+                <button type="submit" class="btn btn-success btn-lg" id="quickTestBtn" style="display:none;">
+                    <i class="fas fa-search"></i> Find Comparables for This Property
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <!-- Fallback if no data loaded -->
+    <div class="alert alert-warning" role="alert">
+        <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> No Dataset Loaded</h5>
+        <p>To use the quick test feature with real properties, please upload your dataset first.</p>
+        <hr>
+        <a href="{{ url_for('upload_file') }}" class="btn btn-warning">
+            <i class="fas fa-upload"></i> Upload Dataset
+        </a>
+    </div>
+    {% endif %}
+    
+    <!-- Custom Property Form -->
+    <div class="card" id="customForm">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-home"></i> Enter Custom Property Details
+            </h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('find_comps') }}" method="post">
+                <input type="hidden" name="sample_property" value="custom">
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="structure_type">Property Type: <span class="text-danger">*</span></label>
+                            <select class="form-control" id="structure_type" name="structure_type" required>
+                                <option value="">Select Property Type</option>
+                                <option value="Detached">Detached</option>
+                                <option value="Townhouse">Townhouse</option>
+                                <option value="Condo">Condo</option>
+                                <option value="Semi-Detached">Semi-Detached</option>
+                                <option value="Duplex">Duplex</option>
+                                <option value="Apartment">Apartment</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="gla">Gross Living Area (sq ft): <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="gla" name="gla" min="500" max="10000" required 
+                                   placeholder="e.g., 2000">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="year_built">Year Built: <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="year_built" name="year_built" min="1800" max="2025" required
+                                   placeholder="e.g., 2010">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="num_beds">Number of Bedrooms: <span class="text-danger">*</span></label>
+                            <select class="form-control" id="num_beds" name="num_beds" required>
+                                <option value="">Select Bedrooms</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3" selected>3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6+</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="num_baths">Bathrooms:</label>
+                            <div class="row">
+                                <div class="col">
+                                    <label for="full_baths">Full Baths:</label>
+                                    <select class="form-control" id="full_baths" name="full_baths">
+                                        <option value="0">0</option>
+                                        <option value="1">1</option>
+                                        <option value="2" selected>2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5+</option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label for="half_baths">Half Baths:</label>
+                                    <select class="form-control" id="half_baths" name="half_baths">
+                                        <option value="0" selected>0</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <input type="hidden" id="num_baths" name="num_baths">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">Property Address (Optional):</label>
+                            <input type="text" class="form-control" id="address" name="address" 
+                                   placeholder="e.g., 123 Main Street">
+                            <small class="form-text text-muted">We'll use this to find nearby properties.</small>
+                            <input type="hidden" id="latitude" name="latitude">
+                            <input type="hidden" id="longitude" name="longitude">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-search"></i> Find Comparable Properties
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Dataset Info Section -->
+    {% if sample_properties and sample_properties|length > 0 %}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h6><i class="fas fa-database text-success"></i> Dataset Information</h6>
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="small text-muted">
+                        Our system finds the top 3 most similar properties based on structure type, square footage, 
+                        bedrooms, bathrooms, and year built. Similarity scores show how closely each property matches your criteria.
+                    </p>
+                </div>
+                <div class="col-md-4 text-right">
+                    <div class="badge badge-success badge-lg p-2">
+                        <i class="fas fa-check-circle"></i> {{ sample_properties|length }} Sample Properties Loaded
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h6><i class="fas fa-info-circle text-info"></i> How It Works</h6>
+            <p class="small text-muted">
+                Upload your property dataset to enable quick testing with real properties. Our system will find 
+                the top 3 most similar properties based on multiple factors including structure type, square footage, 
+                bedrooms, bathrooms, and year built.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleCustomForm() {
+    const sampleSelect = document.getElementById('sample_property');
+    const customForm = document.getElementById('customForm');
+    const quickTestBtn = document.getElementById('quickTestBtn');
+    
+    if (sampleSelect.value === 'custom') {
+        customForm.style.display = 'block';
+        quickTestBtn.style.display = 'none';
+    } else {
+        customForm.style.display = 'none';
+        quickTestBtn.style.display = 'inline-block';
+        
+        // Auto-fill custom form with selected property data for reference
+        const selectedOption = sampleSelect.options[sampleSelect.selectedIndex];
+        if (selectedOption.dataset.structure) {
+            document.getElementById('structure_type').value = selectedOption.dataset.structure;
+            document.getElementById('gla').value = selectedOption.dataset.gla;
+            document.getElementById('year_built').value = selectedOption.dataset.year;
+            document.getElementById('num_beds').value = selectedOption.dataset.beds;
+            document.getElementById('address').value = selectedOption.dataset.address;
+            
+            // Parse bathroom format (e.g., "2:1")
+            const baths = selectedOption.dataset.baths.split(':');
+            if (baths.length === 2) {
+                document.getElementById('full_baths').value = baths[0];
+                document.getElementById('half_baths').value = baths[1];
+            }
+        }
+    }
+}
+
+// Combine full and half baths into the format your model expects
+document.querySelector('#customForm form').addEventListener('submit', function(e) {
+    const fullBaths = document.getElementById('full_baths').value;
+    const halfBaths = document.getElementById('half_baths').value;
+    document.getElementById('num_baths').value = `${fullBaths}:${halfBaths}`;
+});
+
+// Initialize the form display
+document.addEventListener('DOMContentLoaded', function() {
+    toggleCustomForm();
+});
+</script>
+
+<style>
+.badge-lg {
+    font-size: 0.9em;
+    padding: 0.5rem 1rem;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+</style>
+{% endblock %}

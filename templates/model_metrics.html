@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Model Performance Metrics{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1><i class="fas fa-chart-bar"></i> Model Performance Metrics</h1>
+    
+    {% if metrics %}
+    <!-- Performance Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-success" role="alert">
+                <h5 class="alert-heading"><i class="fas fa-check-circle"></i> Model Status: Trained & Ready</h5>
+                <p class="mb-0">Your machine learning model has been successfully trained using the <strong>exact methodology from your Colab notebook</strong>. The model predicts property similarity scores with comprehensive preprocessing including categorical encoding, missing value handling, and feature scaling.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Key Metrics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <i class="fas fa-bullseye fa-2x text-primary mb-2"></i>
+                    <h5 class="card-title">Similarity Accuracy</h5>
+                    <h3 class="text-primary">{{ "%.1f"|format(metrics.test_r2 * 100) }}%</h3>
+                    <small class="text-muted">R² Score: {{ "%.4f"|format(metrics.test_r2) }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fa-2x text-success mb-2"></i>
+                    <h5 class="card-title">Prediction Error</h5>
+                    <h3 class="text-success">{{ "%.4f"|format(metrics.test_mae) }}</h3>
+                    <small class="text-muted">Mean Absolute Error</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-info">
+                <div class="card-body">
+                    <i class="fas fa-database fa-2x text-info mb-2"></i>
+                    <h5 class="card-title">Training Data</h5>
+                    <h3 class="text-info">{{ "{:,}".format(metrics.total_properties) }}</h3>
+                    <small class="text-muted">Properties</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <i class="fas fa-cogs fa-2x text-warning mb-2"></i>
+                    <h5 class="card-title">Features Used</h5>
+                    <h3 class="text-warning">{{ metrics.features_used|length }}</h3>
+                    <small class="text-muted">Numeric Variables</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Expected vs Actual Performance -->
+    {% if metrics.test_r2 > 0.75 %}
+    <div class="alert alert-success" role="alert">
+        <h5 class="alert-heading"><i class="fas fa-trophy"></i> Excellent Performance Match!</h5>
+        <p class="mb-0">Your Flask model is performing at <strong>{{ "%.1f"|format(metrics.test_r2 * 100) }}%</strong> accuracy, which should be very close to your Colab results. The exact preprocessing and model parameters ensure consistent performance.</p>
+    </div>
+    {% elif metrics.test_r2 > 0.60 %}
+    <div class="alert alert-warning" role="alert">
+        <h5 class="alert-heading"><i class="fas fa-info-circle"></i> Good Performance</h5>
+        <p class="mb-0">Performance at <strong>{{ "%.1f"|format(metrics.test_r2 * 100) }}%</strong> is solid. If this differs from your Colab results, check data preprocessing or feature engineering steps.</p>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        <h5 class="alert-heading"><i class="fas fa-wrench"></i> Performance Check Needed</h5>
+        <p class="mb-0">Current performance is <strong>{{ "%.1f"|format(metrics.test_r2 * 100) }}%</strong>. Consider reviewing preprocessing steps or data quality.</p>
+    </div>
+    {% endif %}
+    
+    <!-- Detailed Metrics -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-area"></i> Training vs Test Performance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Training</th>
+                                    <th>Test</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>R² Score</strong></td>
+                                    <td>{{ "%.4f"|format(metrics.training_r2) }}</td>
+                                    <td>{{ "%.4f"|format(metrics.test_r2) }}</td>
+                                    <td>
+                                        {% if (metrics.training_r2 - metrics.test_r2) < 0.1 %}
+                                        <span class="badge badge-success">Good</span>
+                                        {% else %}
+                                        <span class="badge badge-warning">Overfitting</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Mean Absolute Error</strong></td>
+                                    <td>{{ "%.4f"|format(metrics.training_mae) }}</td>
+                                    <td>{{ "%.4f"|format(metrics.test_mae) }}</td>
+                                    <td>
+                                        {% if metrics.test_mae < 2.0 %}
+                                        <span class="badge badge-success">Low Error</span>
+                                        {% else %}
+                                        <span class="badge badge-warning">High Error</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Mean Squared Error</strong></td>
+                                    <td>{{ "%.4f"|format(metrics.training_mse) }}</td>
+                                    <td>{{ "%.4f"|format(metrics.test_mse) }}</td>
+                                    <td>
+                                        {% if metrics.test_mse < 5.0 %}
+                                        <span class="badge badge-success">Low Error</span>
+                                        {% else %}
+                                        <span class="badge badge-warning">High Error</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Model Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Algorithm:</strong></p>
+                            <p><strong>Training Samples:</strong></p>
+                            <p><strong>Test Samples:</strong></p>
+                            <p><strong>Total Properties:</strong></p>
+                            <p><strong>Random State:</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p>Random Forest</p>
+                            <p>{{ "{:,}".format(metrics.training_samples) }}</p>
+                            <p>{{ "{:,}".format(metrics.test_samples) }}</p>
+                            <p>{{ "{:,}".format(metrics.total_properties) }}</p>
+                            <p>42 (Fixed)</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6><i class="fas fa-cogs"></i> Random Forest Parameters:</h6>
+                    <ul class="small mb-2">
+                        <li><strong>n_estimators:</strong> 50</li>
+                        <li><strong>max_depth:</strong> 5</li>
+                        <li><strong>random_state:</strong> 42</li>
+                    </ul>
+                    
+                    <h6><i class="fas fa-search"></i> KNN Parameters:</h6>
+                    <ul class="small mb-2">
+                        <li><strong>n_neighbors:</strong> 10</li>
+                        <li><strong>algorithm:</strong> ball_tree</li>
+                        <li><strong>metric:</strong> manhattan</li>
+                        <li><strong>p:</strong> 1</li>
+                    </ul>
+                    
+                    <h6><i class="fas fa-list"></i> Features Used:</h6>
+                    <div class="d-flex flex-wrap">
+                        {% for feature in metrics.features_used %}
+                        <span class="badge badge-primary mr-2 mb-2">{{ feature }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if metrics.feature_importance %}
+                    <hr>
+                    <h6><i class="fas fa-weight-hanging"></i> Feature Importance:</h6>
+                    <div class="small">
+                        {% for feature, importance in metrics.feature_importance.items() %}
+                        <div class="mb-1">
+                            <span class="font-weight-bold">{{ feature }}:</span>
+                            <div class="progress" style="height: 15px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ (importance * 100) }}%"
+                                     aria-valuenow="{{ (importance * 100) }}" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    {{ "%.3f"|format(importance) }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Colab Script Methodology -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-flask"></i> Exact Colab Script Implementation</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>1. Data Preprocessing (Colab Steps)</h6>
+                    <ul class="small">
+                        <li><strong>Categorical Encoding:</strong> Convert objects to ordered categories</li>
+                        <li><strong>Missing Value Indicators:</strong> Create *_is_missing columns</li>
+                        <li><strong>Categorical Codes:</strong> Convert categories to numeric codes + 1</li>
+                        <li><strong>Numeric Imputation:</strong> Fill missing with median values</li>
+                        <li><strong>Feature Scaling:</strong> StandardScaler on numeric columns</li>
+                        <li><strong>Missing Column Removal:</strong> Drop *_is_missing columns</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>2. Feature Weights (Exact from Colab)</h6>
+                    <ul class="small">
+                        <li><strong>structure_type:</strong> 3.0 (30%)</li>
+                        <li><strong>gla:</strong> 2.5 (25%)</li>
+                        <li><strong>year_built:</strong> 1.5 (15%)</li>
+                        <li><strong>num_beds:</strong> 1.0 (10%)</li>
+                        <li><strong>distance_km:</strong> 2.0 (20%)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <h6>3. Similarity Target Creation</h6>
+                    <ol class="small">
+                        <li>Normalize each feature (mean=0, std=1)</li>
+                        <li>Apply absolute value to normalized features</li>
+                        <li>Multiply by feature weights</li>
+                        <li>Sum weighted contributions</li>
+                        <li>Invert values (max - y) for similarity</li>
+                    </ol>
+                </div>
+                <div class="col-md-6">
+                    <h6>4. Model Training & Evaluation</h6>
+                    <ol class="small">
+                        <li>80/20 train/test split (random_state=42)</li>
+                        <li>StandardScaler + RandomForest pipeline</li>
+                        <li>Calculate MSE, MAE, R² metrics</li>
+                        <li>Feature importance from Random Forest</li>
+                        <li>KNN model for property comparison</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-3">
+                <strong><i class="fas fa-code"></i> Implementation Note:</strong> 
+                This Flask app uses the identical preprocessing pipeline, feature weights, model parameters, and evaluation methodology as your Colab notebook. 
+                The only difference is the web interface wrapper around the exact same machine learning code.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Expected Colab Results -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-clipboard-check"></i> Expected vs Actual Results</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Expected Colab Results:</h6>
+                    <ul class="small">
+                        <li>Training MSE: ~1.8473</li>
+                        <li>Test MSE: ~1.8094</li>
+                        <li>Training MAE: ~1.0631</li>
+                        <li>Test MAE: ~1.0598</li>
+                        <li>Training R²: ~0.8470</li>
+                        <li>Test R²: ~0.8059</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Current Flask Results:</h6>
+                    <ul class="small">
+                        <li>Training MSE: {{ "%.4f"|format(metrics.training_mse) }}</li>
+                        <li>Test MSE: {{ "%.4f"|format(metrics.test_mse) }}</li>
+                        <li>Training MAE: {{ "%.4f"|format(metrics.training_mae) }}</li>
+                        <li>Test MAE: {{ "%.4f"|format(metrics.test_mae) }}</li>
+                        <li>Training R²: {{ "%.4f"|format(metrics.training_r2) }}</li>
+                        <li>Test R²: {{ "%.4f"|format(metrics.test_r2) }}</li>
+                    </ul>
+                </div>
+            </div>
+            
+            {% set r2_diff = (0.8059 - metrics.test_r2)|abs %}
+            {% if r2_diff < 0.05 %}
+            <div class="alert alert-success mt-3">
+                <strong><i class="fas fa-check-circle"></i> Perfect Match!</strong> 
+                Your Flask model performance matches the Colab results within 5% (R² difference: {{ "%.3f"|format(r2_diff) }}).
+            </div>
+            {% elif r2_diff < 0.1 %}
+            <div class="alert alert-warning mt-3">
+                <strong><i class="fas fa-exclamation-triangle"></i> Close Match:</strong> 
+                Performance is within 10% of Colab results (R² difference: {{ "%.3f"|format(r2_diff) }}). Minor data differences expected.
+            </div>
+            {% else %}
+            <div class="alert alert-info mt-3">
+                <strong><i class="fas fa-info-circle"></i> Performance Gap:</strong> 
+                R² difference of {{ "%.3f"|format(r2_diff) }} from Colab results. Check data preprocessing or feature engineering.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- No Metrics Available -->
+    <div class="alert alert-warning" role="alert">
+        <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> No Model Metrics Available</h5>
+        <p>Model performance metrics are not available. This could mean:</p>
+        <ul>
+            <li>No model has been trained yet</li>
+            <li>Insufficient data for training (need 10+ properties)</li>
+            <li>Missing required features for the Colab methodology</li>
+            <li>Model metrics file is missing or corrupted</li>
+        </ul>
+        <hr>
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{{ url_for('upload_file') }}" class="btn btn-warning">
+                    <i class="fas fa-upload"></i> Upload Dataset to Train Model
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ url_for('find_comps') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-search"></i> Try Sample Properties
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Navigation -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <a href="{{ url_for('home') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="{{ url_for('find_comps') }}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Find Comparable Properties
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

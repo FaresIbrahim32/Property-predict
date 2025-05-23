@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}About - Property Appraisal System{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>About the Property Appraisal System</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">System Overview</h5>
+            <p class="card-text">
+                Our Property Appraisal System uses advanced machine learning algorithms to analyze real estate data 
+                and identify the most comparable properties for accurate property valuations. The system leverages 
+                multiple factors including property characteristics, location, and market conditions to provide 
+                reliable comparisons.
+            </p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-brain text-primary"></i> Machine Learning Features
+                    </h5>
+                    <ul>
+                        <li>K-Nearest Neighbors algorithm for similarity matching</li>
+                        <li>Random Forest regression for property valuation</li>
+                        <li>Weighted feature importance scoring</li>
+                        <li>Advanced data preprocessing and normalization</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-search text-success"></i> Comparison Factors
+                    </h5>
+                    <ul>
+                        <li>Property type and structure</li>
+                        <li>Gross Living Area (GLA)</li>
+                        <li>Number of bedrooms and bathrooms</li>
+                        <li>Year built and condition</li>
+                        <li>Location and distance</li>
+                        <li>Recent sale dates and prices</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="fas fa-chart-line text-info"></i> How It Works
+            </h5>
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-upload fa-3x text-primary"></i>
+                    </div>
+                    <h6>1. Upload Data</h6>
+                    <p>Upload your property dataset in JSON or CSV format containing property details and sales information.</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-cogs fa-3x text-success"></i>
+                    </div>
+                    <h6>2. AI Processing</h6>
+                    <p>Our machine learning algorithms analyze the data, preprocessing and normalizing property features.</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-home fa-3x text-info"></i>
+                    </div>
+                    <h6>3. Find Comparables</h6>
+                    <p>Enter subject property details to get the top 3 most similar properties with similarity scores.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="fas fa-tools text-warning"></i> Technical Details
+            </h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Technologies Used:</h6>
+                    <ul>
+                        <li>Python Flask web framework</li>
+                        <li>Scikit-learn machine learning library</li>
+                        <li>Pandas for data manipulation</li>
+                        <li>Bootstrap for responsive UI</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Model Performance:</h6>
+                    <ul>
+                        <li>K-Nearest Neighbors with Manhattan distance</li>
+                        <li>Feature weighting for improved accuracy</li>
+                        <li>Cross-validation for model reliability</li>
+                        <li>SHAP values for explainable AI</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="fas fa-info-circle text-secondary"></i> Usage Guidelines
+            </h5>
+            <p><strong>For best results:</strong></p>
+            <ul>
+                <li>Ensure your dataset contains properties with similar characteristics to your subject property</li>
+                <li>Include recent sales data (within 90 days preferred)</li>
+                <li>Provide complete property information for accurate matching</li>
+                <li>Consider local market conditions when interpreting results</li>
+            </ul>
+            
+            <div class="alert alert-info mt-3">
+                <strong>Note:</strong> This system is designed to assist real estate professionals and should be used 
+                in conjunction with professional judgment and local market knowledge.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

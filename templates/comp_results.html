@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Comparable Properties{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Comparable Properties</h1>
+    
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-info">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Subject Property</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Property Type:</strong> {{ subject.structure_type }}</p>
+                    <p><strong>Gross Living Area:</strong> {{ subject.gla }} sq ft</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Year Built:</strong> {{ subject.year_built }}</p>
+                    <p><strong>Bedrooms:</strong> {{ subject.num_beds }}</p>
+                    <p><strong>Bathrooms:</strong> {{ subject.num_baths }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <h2>Top 3 Comparable Properties</h2>
+    
+    <div class="row">
+        {% for comp in comps %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5>{{ loop.index }}. {{ comp.address }}</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Property Type:</strong> {{ comp.structure_type }}</p>
+                    <p><strong>Gross Living Area:</strong> {{ comp.gla }} sq ft</p>
+                    <p><strong>Year Built:</strong> {{ comp.year_built }}</p>
+                    <p><strong>Bedrooms:</strong> {{ comp.num_beds }}</p>
+                    <p><strong>Bathrooms:</strong> {{ comp.num_baths }}</p>
+                    
+                    {% if comp.sale_price_formatted is defined %}
+                    <p><strong>Sale Price:</strong> {{ comp.sale_price_formatted }}</p>
+                    {% endif %}
+                    
+                    {% if comp.sale_date is defined and comp.sale_date %}
+                    <p><strong>Sale Date:</strong> {{ comp.sale_date }}</p>
+                    {% endif %}
+                    
+                    {% if comp.distance_km is defined %}
+                    <p><strong>Distance:</strong> {{ "%.2f"|format(comp.distance_km) }} km</p>
+                    {% endif %}
+                    
+                    <p><strong>Similarity Score:</strong> {{ "%.2f"|format(comp.similarity_score * 100) }}%</p>
+                </div>
+                <div class="card-footer">
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ comp.similarity_score * 100 }}%" 
+                             aria-valuenow="{{ comp.similarity_score * 100 }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ "%.0f"|format(comp.similarity_score * 100) }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="mt-4">
+        <a href="{{ url_for('find_comps') }}" class="btn btn-secondary">Search Again</a>
+    </div>
+</div>
+{% endblock %}
