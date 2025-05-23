@@ -1,0 +1,26 @@
+{
+  "training_mse": 1.8484,
+  "test_mse": 1.8103,
+  "training_mae": 1.0633,
+  "test_mae": 1.0601,
+  "training_r2": 0.8469,
+  "test_r2": 0.8058,
+  "features_used": [
+    "structure_type",
+    "gla",
+    "year_built",
+    "num_beds",
+    "distance_km"
+  ],
+  "feature_importance": {
+    "structure_type": 0.143900146059401,
+    "gla": 0.2616753143890205,
+    "year_built": 0.17292835073176044,
+    "num_beds": 0.006212768057330434,
+    "distance_km": 0.4152834207624878
+  },
+  "training_samples": 8067,
+  "test_samples": 2017,
+  "total_properties": 10084,
+  "target_type": "similarity_score"
+}
